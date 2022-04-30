@@ -170,19 +170,33 @@ addFinal(X,[],[X]):-!.
 addFinal(X,[Y|L],[Y|Res]):-addFinal(X,L,Res).
 
 myrandom(Xn,Xn1):- AX is 1103515245 * Xn, AXC is AX + 12345,Xn1 is (AXC mod 2147483647).
-
 randomizar([],_,[]):-!.
-randomizar([X|C],Seed,[X|Cf]):- (Seed mod 2) == 0,myrandom(Seed,Nr),randomizar(C,Nr,Cf). 
-randomizar([X|C],Seed,Cf):- myrandom(Seed,Nr), randomizar(C,Nr,Cf2),addFinal(X,Cf2,Cf).
+randomizar([X|L],Seed,Lf):-Rs is (Seed mod 2),Rs is 0,Seed3 is Seed + 1,myrandom(Seed3,Seed2),randomizar(L,Seed2,R),addFinal(X,R,Lf),!.
+randomizar([X|L],Seed,[X|Lf]):-Seed3 is Seed + 1,myrandom(Seed3,Seed2),randomizar(L,Seed2,Lf),!.
 
-%cardsSet(L,E,C,Seed,Cs):- N is E-1, cardSet(N,Cs1),cortar(Cs1,C,Seed,Cs). 
+cortar(L,N,L):- var(N),!;N<0,!.
+cortar(_,0,[]):-!.
+cortar([X|L],N,[X|L2]):- N2 is N-1, cortar(L,N2,L2).
+
+posicion(1,[X|_],X):-!. % Va desde 1 hasta n
+posicion(N,[_|L],E):-N2 is N-1,posicion(N2,L,E).
+
+posicionE(0,X,[X|L]):-!.
+posicionE(N,E,[X|L]):-posicionE(N2,E,L),N is N2 + 1.
+
+%linkear(Ls,Lc,Lf):-
+linkearC(_,[],[]):-!.
+linkearC(Ls,[Y|Lc],Lf2):-posicionE(Y,S,Ls),linkearC(Ls,Lc,Lf),addFinal(S,Lf,Lf2).
+
+% Seed recomendada 13213
+cardsSet(L,E,C,Seed,Cs):- N is E-1, cardSet(N,Cs1),randomizar(Cs1,Seed,Cs2),cortar(Cs2,C,Cs). 
 
 %%% cardsSetToString
 listToString(C,Str):-atomics_to_string(C, ' - ',Str2),string_concat(Str2,"\n",Str).
 cardsSetToString([],""):-!.
 cardsSetToString([X|Cs],Str):- listToString(X,Res),cardsSetToString(Cs,Str2),string_concat(Res, Str2, Str).
 %%%%%%%
-
+modulo(X,R):-R is (X mod 2),(R is 0).
 
 %%%%%%%%%%%%%
 %% TDA Player

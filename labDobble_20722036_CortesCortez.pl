@@ -181,15 +181,17 @@ cortar([X|L],N,[X|L2]):- N2 is N-1, cortar(L,N2,L2).
 posicion(1,[X|_],X):-!. % Va desde 1 hasta n
 posicion(N,[_|L],E):-N2 is N-1,posicion(N2,L,E).
 
-posicionE(0,X,[X|L]):-!.
+posicionE(1,X,[X|L]).
 posicionE(N,E,[X|L]):-posicionE(N2,E,L),N is N2 + 1.
 
 %linkear(Ls,Lc,Lf):-
 linkearC(_,[],[]):-!.
-linkearC(Ls,[Y|Lc],Lf2):-posicionE(Y,S,Ls),linkearC(Ls,Lc,Lf),addFinal(S,Lf,Lf2).
+linkearC(Ls,[Y|Lc],Lf2):-posicionE(Y,S,Ls),linkearC(Ls,Lc,Lf),addFinal(S,Lf,Lf2),!.
 
+linkearA(_,[],[]):-!.
+linkearA(Ls,[Y|Lcs],Lf2):-linkearC(Ls,Y,R),linkearA(Ls,Lcs,Lf),addFinal(R,Lf,Lf2).
 % Seed recomendada 13213
-cardsSet(L,E,C,Seed,Cs):- N is E-1, cardSet(N,Cs1),randomizar(Cs1,Seed,Cs2),cortar(Cs2,C,Cs). 
+cardsSet(L,E,C,Seed,Csf):- N is E-1, cardSet(N,Cs1),randomizar(Cs1,Seed,Cs2),cortar(Cs2,C,Cs),linkearA(L,Cs,Csf). 
 
 %%% cardsSetToString
 listToString(C,Str):-atomics_to_string(C, ' - ',Str2),string_concat(Str2,"\n",Str).

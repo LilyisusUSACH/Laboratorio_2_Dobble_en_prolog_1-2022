@@ -144,7 +144,7 @@ comunCardACards(X,[C|Cs]):-elementosComun(X,C,1),comunCardACards(X,Cs).
 comunCards([],_):-!.
 comunCards([X|L],Cs):-comunCardACards(X,L),comunCards(L,Cs).
 
-cardsSetIsDobble(Cs):- not(repiteCartas(Cs)),comunCards(Cs,Cs).
+cardsSetIsDobble([_|Cs]):- not(repiteCartas(Cs)),comunCards(Cs,Cs).
 
 %%%%%%%%%%%%%
 %% TDA CARDSET
@@ -181,8 +181,8 @@ cortar([X|L],N,[X|L2]):- N2 is N-1, cortar(L,N2,L2).
 posicion(1,[X|_],X):-!. % Va desde 1 hasta n
 posicion(N,[_|L],E):-N2 is N-1,posicion(N2,L,E).
 
-posicionE(1,X,[X|L]).
-posicionE(N,E,[X|L]):-posicionE(N2,E,L),N is N2 + 1.
+posicionE(1,X,[X|_]).
+posicionE(N,E,[_|L]):-posicionE(N2,E,L),N is N2 + 1.
 
 %linkear(Ls,Lc,Lf):-
 linkearC(_,[],[]):-!.
@@ -191,13 +191,35 @@ linkearC(Ls,[Y|Lc],Lf2):-posicionE(Y,S,Ls),linkearC(Ls,Lc,Lf),addFinal(S,Lf,Lf2)
 linkearA(_,[],[]):-!.
 linkearA(Ls,[Y|Lcs],Lf2):-linkearC(Ls,Y,R),linkearA(Ls,Lcs,Lf),addFinal(R,Lf,Lf2).
 % Seed recomendada 13213
-cardsSet([],E,C,Seed,Cs):- N is E-1, cardSet(N,Cs1),randomizar(Cs1,Seed,Cs2),cortar(Cs2,C,Cs),!. 
-cardsSet(L,E,C,Seed,Csf):- N is E-1, cardSet(N,Cs1),randomizar(Cs1,Seed,Cs2),cortar(Cs2,C,Cs),linkearA(L,Cs,Csf). 
+cardsSet([],E,C,Seed,[[]|Cs]):- N is E-1, cardSet(N,Cs1),randomizar(Cs1,Seed,Cs2),cortar(Cs2,C,Cs),!. 
+cardsSet(L,E,C,Seed,[L|Csf]):- N is E-1, cardSet(N,Cs1),randomizar(Cs1,Seed,Cs2),cortar(Cs2,C,Cs),linkearA(L,Cs,Csf). 
 
 %%% cardsSetToString
 listToString(C,Str):-atomics_to_string(C, ' - ',Str2),string_concat(Str2,"\n",Str).
-cardsSetToString([],""):-!.
-cardsSetToString([X|Cs],Str):- listToString(X,Res),cardsSetToString(Cs,Str2),string_concat(Res, Str2, Str).
+cardsToString([],""):-!.
+cardsToString([X|Cs],Str):- listToString(X,Res),cardsToString(Cs,Str2),string_concat(Res, Str2, Str).
+cardsSetToString([_|Cs],Str):-cardsToString(Cs,Str).
+
+% cardsetNthCard
+cardsSetNthCard([_|Cs],N,C):-N2 is N+1,posicionE(N2,C,Cs),!.
+
+% cardsSetFindTotalCards
+largo([],0):-!.
+largo([_|L],R):-largo(L,R2), R is R2+1.
+cardsSetFindTotalCards(C,TC):-largo(C,R), R2 is R-1, TC is R2*R2+R2+1.
+
+isCardEqualCard([],[]):-!.
+isCardEqualCard([X|C1],C2):-estaen(X,C2,1),subtract(C2,[X],C3),isCardEqualCard(C1,C3).
+
+isCardInCards(C1,[C2|Cs]):-isCardEqualCard(C1,C2),!;isCardInCards(C1,Cs).
+
+notInterseccion([],_,[]).
+notInterseccion([C|Cs],CAC,Csf):-isCardInCards(C,CAC),!,notInterseccion(Cs,CAC,Csf).
+notInterseccion([C|Cs],CAC,[C|Csf]):-notInterseccion(Cs,CAC,Csf).
+
+% Missing cards (CS, CS2) , CAC = CardsSet A comparar
+% Debe tener al menos una carta
+cardsSetMissingCards([X,Fc|Cs],[X|Csf]):- largo(Fc,Largo),cardsSet(X,Largo,-1,13213,[_|CAC]),notInterseccion(CAC,[Fc|Cs],Csf),!.
 %%%%%%%
 modulo(X,R):-R is (X mod 2),(R is 0).
 
@@ -219,7 +241,6 @@ modulo(X,R):-R is (X mod 2),(R is 0).
     % Hechos
 
     % Reglas
-
 %%%%%%%%%%%%%
 %% TDA Players
 %%%%%%%%%%%%%
@@ -240,7 +261,7 @@ modulo(X,R):-R is (X mod 2),(R is 0).
     % Reglas
 
 %%%%%%%%%%%%%
-%% TDA GAME
+%% TDA Area
 %%%%%%%%%%%%%
 
 % Dominios
@@ -257,3 +278,37 @@ modulo(X,R):-R is (X mod 2),(R is 0).
     % Hechos
 
     % Reglas
+
+
+%%%%%%%%%%%%%
+%% TDA GAME
+%%%%%%%%%%%%%
+
+% Dominios
+
+% Predicados
+
+% Metas
+    % Secundarias
+
+    % Primarias
+
+% Clausulas
+        
+    % Hechos
+
+    % Reglas
+% game is [ Area , cardsSet , numero_jugadores, turno , jugadores , estado, modo,seed]
+dobbleGame(Np, [_|Cs], Mode, Seed, Game):-Np > 0, cardsSetIsDobble(Cs), Seed > 0,
+            Game = [[], Cs, Np, 0, [],"No empezado", Mode, Seed].
+
+getPlayers([_,_,_,_,X|_],X).
+setPlayers(NewPlayer,[A,B,C,D,_|Rest],[A,B,C,D,NewPlayer|Rest]):- largo(NewPlayer,L) ,L < C+1.
+
+isPlayerInPlayers(Name,[Name|_]):-!.
+isPlayerInPlayers(Name,[_|Pls]):-isPlayerInPlayers(Name,Pls).
+
+dobbleGameRegister(Name,G1,GF):-getPlayers(G1,Pls),largo(Pls,_),not(isPlayerInPlayers(Name,Pls)),setPlayers([Name|Pls], G1, GF).
+
+
+dobbleGameWhoseTurnIsIt([_,_,_,X,Pls|_],P):- largo(Pls,Largo),I is X mod Largo, I2 is I+1, posicionE(I2,P,Pls),!.

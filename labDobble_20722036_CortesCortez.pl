@@ -298,17 +298,63 @@ modulo(X,R):-R is (X mod 2),(R is 0).
     % Hechos
 
     % Reglas
-% game is [ Area , cardsSet , numero_jugadores, turno , jugadores , estado, modo,seed]
+% game is [ Area , cardsSet , numero_jugadores, turno , jugadores, cartasJugadores , estado, modo,seed]
 dobbleGame(Np, [_|Cs], Mode, Seed, Game):-Np > 0, cardsSetIsDobble(Cs), Seed > 0,
             Game = [[], Cs, Np, 0, [],"No empezado", Mode, Seed].
 
 getPlayers([_,_,_,_,X|_],X).
 setPlayers(NewPlayer,[A,B,C,D,_|Rest],[A,B,C,D,NewPlayer|Rest]):- largo(NewPlayer,L) ,L < C+1.
 
-isPlayerInPlayers(Name,[Name|_]):-!.
+getArea([A|_],A).
+setArea(A,[_|Resto],[A|Resto]).
+getMode([_,_,_,_,_,_,X|_],X).
+
+getCards([_,Cs|_],Cs).
+setCards(Cs,[A,_|Resto],[A,Cs|Resto]).
+
+dobbleGameStatus([_,_,_,_,_,E|_],E).
+setStatus(S,[A,B,C,D,E,_|Resto],[A,B,C,D,E,S|Resto]).
+
+isPlayerInPlayers(Name,[[Name|_]|_]):-!.
 isPlayerInPlayers(Name,[_|Pls]):-isPlayerInPlayers(Name,Pls).
 
-dobbleGameRegister(Name,G1,GF):-getPlayers(G1,Pls),largo(Pls,_),not(isPlayerInPlayers(Name,Pls)),setPlayers([Name|Pls], G1, GF).
+dobbleGameRegister(Name,G1,GF):-getPlayers(G1,Pls),largo(Pls,_),not(isPlayerInPlayers(Name,Pls)),setPlayers([[Name,0,[]]|Pls], G1, GF).
+
+dobbleGameWhoseTurnIsIt([_,_,_,X,Pls|_],P):- largo(Pls,Largo),I is X mod Largo, I2 is I+1, posicionE(I2,[P|_],Pls),!.
+
+isElementInAllArea(_,[]):-!.
+isElementInAllArea(E,[X|R]):- estaen(E,X,1),isElementInAllArea(E,R).
+
+modifyPlayerForSM(Name,NC,[[Name,Score,Cs]|Resto],[[Name,Score2,Cs2]|Resto]):-addListToList(NC,Cs,Cs2),Score2 is Score+1,!.
+modifyPlayerForSM(Name,NC,[X|Pls],[X|Pls2]):-modifyPlayerForSM(Name,NC,Pls,Pls2).
+
+stackMode(G,_,G):- dobbleGameStatus(G,S), S == "Finalizado".
+
+stackMode([A,Cs|Resto],[],Gf):- largo(Cs,L), L < 2, setStatus("Finalizado",[A,Cs|Resto],Gf), A == [],!.
+stackMode(G,[],Gf):-getArea(G,Area), Area == [] ,setStatus("Jugando",G,G1),getCards(G1,[C1,C2|Resto]),setArea([C1,C2],G1,G2),setCards(Resto,G2,Gf),!. %saco dos cartas del mazo y las pongo en el area
+stackMode([A,Cs|Resto],[],[A,Cs|Resto]):-!.
+
+stackMode(G,[X,U,E],Gf):- X == spotit,getArea(G,Area),isElementInAllArea(E,Area),getPlayers(G,Pls),modifyPlayerForSM(U,Area,Pls,Pls2),setArea([],G,G2), setPlayers(Pls2,G2,Gf),!.
+stackMode(G,[X,_,E],G2):- X == spotit,getArea(G,Area),not(isElementInAllArea(E,Area)),stackMode(G,[pass],G2),!. % Si no acierta se devuelven al mazo
+
+stackMode([Area,Cs,Np,Turn|Rest],[X|_],[[],Ncs,Np,Turn2|Rest]):- X == pass,addListToList(Cs,Area,Ncs), Turn2 is Turn + 1. % NO TIENE LOGICA IMPLEMENTARLO, PERO LO HARE PARA COMPROBAR EL dobbleGameWhoseTurnIsIt
+stackMode(G,[X|_],Gf):- X == finish, setStatus("Finalizado",G,Gf).
+
+dobbleGamePlay(G,Ac,Gf):-getMode(G,Mode), Mode = "stackMode",stackMode(G,Ac,Gf),!. % Que hacer cuando es stackMode
 
 
-dobbleGameWhoseTurnIsIt([_,_,_,X,Pls|_],P):- largo(Pls,Largo),I is X mod Largo, I2 is I+1, posicionE(I2,P,Pls),!.
+scorePlayer(Name,[[Name,Score|_]|_],Score):-!.
+scorePlayer(Name,[_|Pls],Score):-scorePlayer(Name,Pls,Score).
+dobbleGameScore(G,User,Score):-getPlayers(G,Pls),scorePlayer(User,Pls,Score).
+
+
+dobbleGameToString(G,Str):- dobbleGameStatus(G,Sta),string_concat("Estado de juego: \n", Sta,Str1) ,getArea(G,Area), cardsToString(Area,AreaStr), string_concat("\nArea de juego: \n", AreaStr,Str2),
+string_concat(Str1, Str2,Str).
+
+% Ejemplo juego
+%dobbleGame(4,[[],[a,b,c],[b,d,e],[e,f,g]],"stackMode",131412,G),dobbleGameRegister("juan",G,G1),dobbleGameRegister("pedro",G1,G2),dobbleGamePlay(G2,[],G3),
+%dobbleGameWhoseTurnIsIt(G3,Turn1),dobbleGamePlay(G3,[pass],G4),dobbleGameWhoseTurnIsIt(G4,Turn2),dobbleGamePlay(G4,[],G5),dobbleGamePlay(G5,[pass],G6),dobbleGameWhoseTurnIsIt(G6,Turn3).
+
+% Otro ejemplo
+%dobbleGame(4,[[],[a,b,c],[b,d,e],[e,f,g]],"stackMode",131412,G),dobbleGameRegister("juan",G,G1),dobbleGameRegister("pedro",G1,G2),dobbleGamePlay(G2,[],G3),dobbleGamePlay(G3,[pass],G4),
+%dobbleGamePlay(G4,[],G5),dobbleGamePlay(G3,[spotit,"juan",a],G6),dobbleGamePlay(G3,[spotit,"juan",b],G7),dobbleGamePlay(G3,[finish],G8),dobbleGamePlay(G8,[spotit,"pedro",b],G9).

@@ -332,7 +332,7 @@ un Game es [ Area , cardsSet , numero_jugadores, turno , jugadores, estado, modo
 % Predicados
     % dobbleGame(NP, CardsSet, Mode, Seed, Game).
     % getPlayers(Game, Pls).
-    % setPlayers(Pls, Game, NewGame).
+    % getPlayers(Pls, Game, NewGame).
     % getArea(Game, Area).
     % setArea(Area,Game, NewGame).
     % getMode(Game, Mode).
@@ -579,93 +579,6 @@ ejGameToString4(Str):-ejGamePlay7(G),dobbleGameToString(G,Str).
 % ejemplo de usar todo 
 % dobbleGame(4,[[],[]],"ModoX",1323,G),dobbleGameRegister("juan",G,G1),dobbleGameRegister("juan",G2,G1),dobbleGameRegister("juan",G2,G3),dobbleGameRegister("juana",G3,G4),
 % dobbleGameRegister("juane",G4,G5),dobbleGameRegister("juanaa",G5,G7),dobbleGameWhoseTurnIsIt(G7,"juanaa").
-% Primero poner el comando
-% set_prolog_flag(answer_write_options,[max_depth(0)]).
-
-% Ejemplos TDA cardsSet
-
-% Funciona para n = 1,2,3,5,7,11,13,17, etc...
-ejCs1(Cs):-cardsSet([],5,-1,132132,Cs). % Generando un cardsSet que no es valido, ya que
-% Tiene cartas sin elementos en comun, esto, ya que su n no es primo
-ejCs2(Cs):-cardsSet([a,b,c,d,e,f,g,h],3,4,123214,Cs).
-ejCs3(Cs):-cardsSet([a,b,c,d,e,f,g,h],3,4,132,Cs).
-% los de arriba para comprobar la aleatorizacion segun la seed
-ejCs4(Cs):-cardsSet([a,b,c],2,A,89,Cs),var(A).
-ejCs5(Cs):-cardsSet([a,b,c,d,e,f,g,h],3,-1,13123,Cs).
-
-ejIsDobble1(Cs):-ejCs1(Cs),cardsSetIsDobble(Cs).
-ejIsDobble2(Cs):-ejCs2(Cs),cardsSetIsDobble(Cs).
-% entrada manual siguiendo el formato de dobble [[elements] X Cards]
-% No importa el elements para saber si es dobble
-ejIsDobble3():-cardsSetIsDobble([[],[a,b,c],[a,d,e],[e,c,l]]). 
-ejIsDobble4():-cardsSetIsDobble([[],[a,b,c],[a,d,e],[e,f,l]]). 
-
-ejNthCard1(C):- ejCs1(Cs),cardsSetNthCard(Cs,1,C).
-ejNthCard2(C):- ejCs2(Cs),cardsSetNthCard(Cs,3,C).
-ejNthCard3(C):- ejCs3(Cs),cardsSetNthCard(Cs,3,C).
-ejNthCard4(C):- ejCs4(Cs),cardsSetNthCard(Cs,4,C). % no tiene 4 cartas, da false.
-
-ejFindTotalCards1(N):-ejNthCard1(C), cardsSetFindTotalCards(C,N).
-ejFindTotalCards2(N):-ejNthCard2(C), cardsSetFindTotalCards(C,N).
-ejFindTotalCards3(N):-ejNthCard3(C), cardsSetFindTotalCards(C,N).
-ejFindTotalCards4(N):-ejNthCard4(C), cardsSetFindTotalCards(C,N).
-
-ejMissingCards1(MC):- ejCs1(Cs), cardsSetMissingCards(Cs,MC).
-ejMissingCards2(MC):- ejCs2(Cs), cardsSetMissingCards(Cs,MC).
-ejMissingCards3(MC):- ejCs3(Cs), cardsSetMissingCards(Cs,MC).
-ejMissingCards4(MC):- ejCs4(Cs), cardsSetMissingCards(Cs,MC).
-
-ejCsToString1(Str):-ejCs1(Cs),cardsSetToString(Cs,Str).
-ejCsToString2(Str):-ejCs4(Cs),cardsSetToString(Cs,Str).
-ejCsToString3(Str):-ejCs3(Cs),cardsSetToString(Cs,Str).
-ejCsToString4(Str):-ejCs2(Cs),cardsSetMissingCards(Cs,MC),cardsSetToString(MC,Str).
-
-% Ejemplos TDA Game
-
-ejGame1(G):-ejCs5(Cs),dobbleGame(4,Cs,stackMode,1312,G).
-ejGame2(G):-ejCs5(Cs),dobbleGame(2,Cs,stackMode,1312,G).
-ejGame3(G):-dobbleGame(4,[[],[a,b,c],[b,d,e],[e,f,g]],stackMode,1312,G).
-
-ejGameRegister1(G):-ejGame1(G1),dobbleGameRegister("pedro",G1,G).
-ejGameRegister2(G):-ejGame2(G1),dobbleGameRegister("ignacio",G1,G2),dobbleGameRegister("juan",G2,G).
-ejGameRegister3(G):-ejGame2(G1),dobbleGameRegister("ignacio",G1,G2),dobbleGameRegister("juan",G2,G3), 
-                    dobbleGameRegister("pedro",G3,G).
-ejGameRegister4(G):-ejGame2(G1),dobbleGameRegister("ignacio",G1,G2),dobbleGameRegister("ignacio",G,G2).
-% el 4 es lo que se pedia en el enunciado
-
-ejWhoseTurn1(Name):-ejGame1(G1), dobbleGameWhoseTurnIsIt(G1,Name). % da error, debe tener
-                                                        % al menos 1 jugador registrado
-ejWhoseTurn2(Name):-ejGameRegister1(G1), dobbleGameWhoseTurnIsIt(G1,Name).
-ejWhoseTurn3(Name):-ejGameRegister2(G1), dobbleGameWhoseTurnIsIt(G1,Name).
-ejWhoseTurn4(Name):-ejGameRegister2(G1),dobbleGamePlay(G1,[pass],G2), dobbleGameWhoseTurnIsIt(G2,Name).
-ejWhoseTurn5(Name):-ejGameRegister2(G1),dobbleGamePlay(G1,[pass],G2),dobbleGamePlay(G2,[pass],G3), dobbleGameWhoseTurnIsIt(G3,Name).
-
-ejGamePlay1(G2):-ejGameRegister2(G1),dobbleGamePlay(G1,[],G2).
-ejGamePlay2(G3):-ejGameRegister2(G1),dobbleGamePlay(G1,[],G2),dobbleGamePlay(G2,[spotit, "juan",a],G3).
-ejGamePlay3(G3):-ejGamePlay2(G1),dobbleGamePlay(G1,[],G2),dobbleGamePlay(G2,[spotit, "ignacio",a],G3).
-ejGamePlay4(G3):-ejGamePlay3(G1),dobbleGamePlay(G1,[],G2),dobbleGamePlay(G2,[spotit, "ignacio",c],G3).
-ejGamePlay5(G3):-ejGamePlay4(G1),dobbleGamePlay(G1,[],G2),dobbleGamePlay(G2,[spotit, "ignacio",b],G3).
-ejGamePlay6(G2):-ejGamePlay5(G1),dobbleGamePlay(G1,[],G2).
-ejGamePlay7(G2):-ejGamePlay3(G1),dobbleGamePlay(G1,[finish],G2).
-
-ejGameStatus1(Sta):-ejGameRegister2(G),dobbleGameStatus(G,Sta).
-ejGameStatus2(Sta):-ejGamePlay1(G),dobbleGameStatus(G,Sta).
-ejGameStatus3(Sta):-ejGamePlay6(G),dobbleGameStatus(G,Sta).
-ejGameStatus4(Sta):-ejGamePlay7(G),dobbleGameStatus(G,Sta).
-
-ejGameScore1(Score):-ejGameRegister2(G),dobbleGameScore(G,"juan",Score).
-ejGameScore2(Score):-ejGamePlay1(G),dobbleGameScore(G,"juan",Score).
-ejGameScore3(Score):-ejGamePlay6(G),dobbleGameScore(G,"juan",Score).
-ejGameScore4(Score):-ejGamePlay4(G),dobbleGameScore(G,"ignacio",Score).
-ejGameScore5(Score):-ejGamePlay5(G),dobbleGameScore(G,"ignacio",Score).
-ejGameScore6(Score):-ejGamePlay6(G),dobbleGameScore(G,"ignacio",Score).
-
-ejGameToString1(Str):-ejGamePlay1(G),dobbleGameToString(G,Str).
-ejGameToString2(Str):-ejGamePlay4(G),dobbleGameToString(G,Str).
-ejGameToString3(Str):-ejGamePlay6(G),dobbleGameToString(G,Str).
-ejGameToString4(Str):-ejGamePlay7(G),dobbleGameToString(G,Str).
-
-% EJEMPLOS EXTRA
 
 % Ejemplo juego
 %dobbleGame(4,[[],[a,b,c],[b,d,e],[e,f,g]],stackMode,131412,G),dobbleGameRegister("juan",G,G1),dobbleGameRegister("pedro",G1,G2),dobbleGamePlay(G2,[],G3),
@@ -673,7 +586,6 @@ ejGameToString4(Str):-ejGamePlay7(G),dobbleGameToString(G,Str).
 
 % Otro ejemplo
 %dobbleGame(4,[[],[a,b,c],[b,d,e],[e,f,g]],stackMode,131412,G),dobbleGameRegister("juan",G,G1),dobbleGameRegister("pedro",G1,G2),dobbleGamePlay(G2,[],G3),dobbleGamePlay(G3,[pass],G4),
-<<<<<<< HEAD
 %dobbleGamePlay(G4,[],G5),dobbleGamePlay(G3,[spotit,"juan",a],G6),dobbleGamePlay(G3,[spotit,"juan",b],G7),dobbleGamePlay(G3,[finish],G8),dobbleGamePlay(G8,[spotit,"pedro",b],G9).
 % mas ejemplos
 % cardsSet([a,b,c,d,e,f,g],3,A,1213,Cs), dobbleGame(4, Cs, "stackMode", 12323,G0),dobbleGameRegister("juan",G0,G1),dobbleGameRegister("pedro",G1,G2),dobbleGamePlay(G2,[],G3),dobbleGamePlay(G3,[spotit, "juan", d],G4),dobbleGameToString(G4,Str0),dobbleGamePlay(G4,[finish],G5),dobbleGameToString(G5,Str1).
@@ -682,6 +594,3 @@ ejemploFinal(GameString):-cardsSet([a,b,c,d,e,f,g],3,-1,1213,Cs), dobbleGame(4, 
                             dobbleGamePlay(G2,[],G3),dobbleGamePlay(G3,[spotit, "juan", d],G4),dobbleGamePlay(G4,[],G5),dobbleGamePlay(G5,[spotit, "pedro" , a],G6),
                             dobbleGamePlay(G6,[],G7),dobbleGamePlay(G7,[spotit, "pedro",g],G8),dobbleGamePlay(G8,[],G9),dobbleGamePlay(G9,[spotit,"juan",c],G10),
                             dobbleGamePlay(G10,[],G11),dobbleGameToString(G11,GameString).
-=======
-%dobbleGamePlay(G4,[],G5),dobbleGamePlay(G3,[spotit,"juan",a],G6),dobbleGamePlay(G3,[spotit,"juan",b],G7),dobbleGamePlay(G3,[finish],G8),dobbleGamePlay(G8,[spotit,"pedro",b],G9).
->>>>>>> 89c01224e731c19fee64e5f93293cdbe4c73e0ea

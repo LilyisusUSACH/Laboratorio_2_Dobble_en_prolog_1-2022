@@ -588,9 +588,9 @@ ejGameToString4(Str):-ejGamePlay7(G),dobbleGameToString(G,Str).
 %dobbleGame(4,[[],[a,b,c],[b,d,e],[e,f,g]],stackMode,131412,G),dobbleGameRegister("juan",G,G1),dobbleGameRegister("pedro",G1,G2),dobbleGamePlay(G2,[],G3),dobbleGamePlay(G3,[pass],G4),
 %dobbleGamePlay(G4,[],G5),dobbleGamePlay(G3,[spotit,"juan",a],G6),dobbleGamePlay(G3,[spotit,"juan",b],G7),dobbleGamePlay(G3,[finish],G8),dobbleGamePlay(G8,[spotit,"pedro",b],G9).
 % mas ejemplos
-% cardsSet([a,b,c,d,e,f,g],3,A,1213,Cs), dobbleGame(4, Cs, "stackMode", 12323,G0),dobbleGameRegister("juan",G0,G1),dobbleGameRegister("pedro",G1,G2),dobbleGamePlay(G2,[],G3),dobbleGamePlay(G3,[spotit, "juan", d],G4),dobbleGameToString(G4,Str0),dobbleGamePlay(G4,[finish],G5),dobbleGameToString(G5,Str1).
+% cardsSet([a,b,c,d,e,f,g],3,A,1213,Cs), dobbleGame(4, Cs, stackMode, 12323,G0),dobbleGameRegister("juan",G0,G1),dobbleGameRegister("pedro",G1,G2),dobbleGamePlay(G2,[],G3),dobbleGamePlay(G3,[spotit, "juan", d],G4),dobbleGameToString(G4,Str0),dobbleGamePlay(G4,[finish],G5),dobbleGameToString(G5,Str1).
 
-ejemploFinal(GameString):-cardsSet([a,b,c,d,e,f,g],3,-1,1213,Cs), dobbleGame(4, Cs, "stackMode", 12323,G0),dobbleGameRegister("juan",G0,G1),dobbleGameRegister("pedro",G1,G2),
+ejemploFinal(GameString):-cardsSet([a,b,c,d,e,f,g],3,-1,1213,Cs), dobbleGame(4, Cs, stackMode, 12323,G0),dobbleGameRegister("juan",G0,G1),dobbleGameRegister("pedro",G1,G2),
                             dobbleGamePlay(G2,[],G3),dobbleGamePlay(G3,[spotit, "juan", d],G4),dobbleGamePlay(G4,[],G5),dobbleGamePlay(G5,[spotit, "pedro" , a],G6),
                             dobbleGamePlay(G6,[],G7),dobbleGamePlay(G7,[spotit, "pedro",g],G8),dobbleGamePlay(G8,[],G9),dobbleGamePlay(G9,[spotit,"juan",c],G10),
                             dobbleGamePlay(G10,[],G11),dobbleGameToString(G11,GameString).

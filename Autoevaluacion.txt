@@ -1,0 +1,19 @@
+Requisitos funcionales -> Puntaje
+
+TDAs -> 1
+
+TDA cardsSet
+- cardsSet (constructor) -> 1
+- cardsSetIsDobble -> 1
+- cardsSetNthCard -> 1
+- cardsSetFindTotalCards -> 1
+- cardsSetMissingCards -> 1
+- cardsSetToString -> 1
+TDA Game
+- dobbleGame -> 1
+- dobbleGameRegister -> 1
+- dobbleGameWhoseTurnIsIt -> 1
+- dobbleGamePlay -> 1
+- dobbleGameStatus -> 1
+- dobbleGameScore -> 1
+- dobbleGameToString -> 1
